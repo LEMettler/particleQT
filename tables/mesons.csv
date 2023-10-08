@@ -1,0 +1,17 @@
+idx,name,symbol,quarks,Q,J,P,baryonnumber,leptonnumber,T,T_3,I,I_3,S,C,B,T.1,L_e,L_mu,L_tau
+12,Positive pion,\pi^+,u\overline{d},1,0,-,0,0,1,1,1.0,1.0,0,0,0,0,0,0,0
+13,Positive rho,\rho^+,u\overline{d},1,1,-,0,0,1,1,1.0,1.0,0,0,0,0,0,0,0
+14,Negative pion,\pi^-,\overline{u}d,-1,0,-,0,0,1,-1,1.0,1.0,0,0,0,0,0,0,0
+15,Negative rho,\rho^-,\overline{u}d,-1,1,-,0,0,1,0,1.0,0.0,0,0,0,0,0,0,0
+16,Neutral Pion,\pi^0,\overline{u}u\) or \(\overline{d}d,0,0,-,0,0,1,0,1.0,0.0,0,0,0,0,0,0,0
+17,Neutral eta,\eta^0,"\overline{u}u, \, \overline{d}d\) or \(\overline{s}s",0,0,-,0,0,1,1,1.0,0.5,0,0,0,0,0,0,0
+18,Positive kaon,K^+,u\overline{s},1,0,-,0,0,1,1,0.5,0.5,-1,0,0,0,0,0,0
+19,Neutral kaon,K^0,d\overline{s},0,0,-,0,0,1,0,0.5,-0.5,-1,0,0,0,0,0,0
+20,Negative kaon,K^-,\overline{u}s,-1,0,-,0,0,1,0,0.5,0.5,1,0,0,0,0,0,0
+21,J/Psi,J/\psi,\overline{c}c,0,1,-,0,0,1,0,0.0,0.0,0,0,0,0,0,0,0
+22,Charmed eta,\eta_0,c\overline{c},0,0,-,0,0,1,0,0.0,0.0,0,0,0,0,0,0,0
+23,Neutral D,D^0,\overline{u}c,0,0,-,0,0,1,0,0.0,-0.5,0,1,0,0,0,0,0
+24,Neutral D,D^{*0},\overline{u}c,0,1,-,0,0,1,0,0.5,-0.5,0,1,0,0,0,0,0
+25,Positive D,D^+,\overline{d}c,1,0,-,0,0,1,-1,0.5,0.5,0,1,0,0,0,0,0
+26,Neutral B,B^0,\overline{d}b,0,0,-,0,0,1,0,0.5,0.5,0,0,1,0,0,0,0
+27,Upsilon,\Upsilon,b\overline{b},0,1,-,0,0,1,0,0.0,0.0,0,0,0,0,0,0,0
