@@ -125,7 +125,7 @@ class Ui_MainWindow(object):
         #self.layout.addWidget(self.label_equation, 0, 4, 1, 4, alignment=Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.canvas_equation, 0, 4, 1, 4, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.layout.addWidget(self.label_forces, 2, 1, 1, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.label_forces, 2, 2, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
         self.layout.addWidget(self.layoutWidget, 2, 3, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter) #partice type selection
         self.layout.addWidget(self.table_selection, 1, 3, 3, 8, alignment=Qt.AlignmentFlag.AlignCenter)
 
