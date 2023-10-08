@@ -10,7 +10,7 @@ class Handler:
         self.df_leptons = pd.read_csv('tables/leptons.csv').rename(columns={'baryonnumber': 'Baryon', 'leptonnumber': 'Lepton'})
         self.df_baryons = pd.read_csv('tables/baryons.csv').rename(columns={'baryonnumber': 'Baryon', 'leptonnumber': 'Lepton'})
         self.df_mesons = pd.read_csv('tables/mesons.csv').rename(columns={'baryonnumber': 'Baryon', 'leptonnumber': 'Lepton'})
-        self.df_bosons = pd.DataFrame(columns=self.df_baryons.columns)
+        self.df_bosons = pd.read_csv('tables/bosons.csv').rename(columns={'baryonnumber': 'Baryon', 'leptonnumber': 'Lepton'})
         self.type_dict = {'leptons': self.df_leptons,
                           'mesons': self.df_mesons,
                           'baryons': self.df_baryons,
@@ -48,7 +48,7 @@ class Handler:
 
         df_vals = {'Q': [df.Q.sum()],
                    'J': [df.J.sum()],
-                   'P': [df.P.apply(lambda x: eval(x + '1')).product()],
+                   'P': [df.P.product()],
                    'Baryon': [df.Baryon.sum()],
                    'Lepton': [df.Lepton.sum()],
                    'T': [df['T'].sum()],
@@ -69,7 +69,7 @@ class Handler:
         df = self.df_final.copy()[self.sum_cols]
         df_vals = {'Q': [df.Q.sum()],
                    'J': [df.J.sum()],
-                   'P': [df.P.apply(lambda x: eval(x + '1')).product()],
+                   'P': [df.P.product()],
                    'Baryon': [df.Baryon.sum()],
                    'Lepton': [df.Lepton.sum()],
                    'T': [df['T'].sum()],
@@ -90,7 +90,7 @@ class Handler:
 
         dict_initial = {'Q': [df.Q.sum()],
                    'J': [df.J.sum()],
-                   'P': [df.P.apply(lambda x: eval(x + '1')).product()],
+                   'P': [df.P.product()],
                    'Baryon': [df.Baryon.sum()],
                    'Lepton': [df.Lepton.sum()],
                    'T': [df['T'].sum()],
@@ -108,7 +108,7 @@ class Handler:
         df = self.df_final.copy()[self.sum_cols]
         dict_final = {'Q': [df.Q.sum()],
                    'J': [df.J.sum()],
-                   'P': [df.P.apply(lambda x: eval(x + '1')).product()],
+                   'P': [df.P.product()],
                    'Baryon': [df.Baryon.sum()],
                    'Lepton': [df.Lepton.sum()],
                    'T': [df['T'].sum()],
@@ -144,7 +144,7 @@ class Handler:
 
         em_conservation_list = ['Q', 'J', 'P', 'Baryon', 'Lepton', 'I_3', 'S', 'C', 'B', 'T.1', 'L_e', 'L_mu', 'L_tau']
         strong_conservation_list = ['Q', 'J', 'P', 'Baryon', 'Lepton', 'I', 'I_3', 'S', 'C', 'B', 'T.1', 'L_e', 'L_mu', 'L_tau']
-        weak_conservation_list = ['Q', 'J', 'P', 'Baryon', 'Lepton', 'T_3', 'L_e', 'L_mu', 'L_tau']
+        weak_conservation_list = ['Q', 'J', 'Baryon', 'Lepton', 'T_3', 'L_e', 'L_mu', 'L_tau']
 
         em_conservation, strong_conservation, weak_conservation = True, True, True
 
