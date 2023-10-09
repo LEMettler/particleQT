@@ -7,3 +7,5 @@ I hope this application helps out for quickly checking the possibility of a part
 
 ---
 This is my first GUI application using Python and the PyQt6 module.
+
+![Screenshot Example](/screenshot_example.png)
