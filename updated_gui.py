@@ -64,6 +64,9 @@ class Ui_MainWindow(object):
         self.table_initial.setMinimumHeight(125)
         self.table_initial.setModel(self.handler.getInitial())
         self.table_initial.clicked.connect(self.changeSelection)
+        self.table_initial.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table_initial.customContextMenuRequested.connect(self.onRightClickMenu)
+
 
         self.table_final = QtWidgets.QTableView()
         self.table_final.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
@@ -74,6 +77,9 @@ class Ui_MainWindow(object):
         self.table_final.setModel(self.handler.getFinal())
         self.table_final.clicked.connect(self.changeSelection)
         self.selected_table = None
+        self.table_final.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table_final.customContextMenuRequested.connect(self.onRightClickMenu)
+
         
 
 
@@ -136,12 +142,46 @@ class Ui_MainWindow(object):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #######################################################
 
+    def onRightClickMenu(self, event):
+        self.menu = QtWidgets.QMenu(self.MainWindow)
+        deleteAction = QtGui.QAction('Delete', self.MainWindow)
+
+        sender_table = self.MainWindow.sender()
+        if sender_table == self.table_initial:
+            deleteAction.triggered.connect(lambda: self.deleteRowInitial(event))
+        else:
+            deleteAction.triggered.connect(lambda: self.deleteRowFinal(event))
+
+        self.menu.addAction(deleteAction)
+        self.menu.popup(QtGui.QCursor.pos())
+
+    def deleteRowInitial(self, event):        
+        clicked_index = self.table_initial.rowAt(event.y())
+        self.handler.removeInitial(clicked_index)
+        self.updateInitialTable()
+        self.updateFinalTable()
+        self.updateSumTable()
+        self.updateEquationCanvas()
+        self.updateForces()
+
+
+    def deleteRowFinal(self, event):        
+        clicked_index = self.table_final.rowAt(event.y())
+        self.handler.removeFinal(clicked_index)        
+        self.updateInitialTable()
+        self.updateFinalTable()
+        self.updateSumTable()
+        self.updateEquationCanvas()
+        self.updateForces()
+
+
     def onParticleGroupSelected(self):
         selected_group = self.combobox_particle_group.currentText().lower()
         data = self.handler.getTable(selected_group)
         self.table_selection.setModel(data)
 
-    
+
+
     def onAddInitialClicked(self):
         try:
             selected_type = self.combobox_particle_group.currentText().lower()
