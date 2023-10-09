@@ -131,6 +131,10 @@ class Handler:
                 J_comp = (dict_initial['J'][0]%1.0 == 0.0) == (dict_final['J'][0]%1.0 == 0.0)
                 dict_conservation['J'] = J_comp
                 list_conservation.append(i)
+            elif key == 'T':
+                T_comp = (dict_initial['T'][0]%1.0 == 0.0) == (dict_final['T'][0]%1.0 == 0.0)
+                dict_conservation['T'] = T_comp
+                list_conservation.append(i)
             else:
                 dict_conservation[key] = dict_initial[key] == dict_final[key]
                 if dict_initial[key] == dict_final[key]:
