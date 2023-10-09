@@ -38,22 +38,23 @@ class Ui_MainWindow(object):
         self.label_forces = QtWidgets.QLabel()
         self.label_forces.setMinimumSize(QtCore.QSize(200, 0))
         self.label_forces.setObjectName("label_forces")
-        self.updateForces()
+        self.label_forces.setFont(QtGui.QFont('Arial', 12))
 
         self.combobox_particle_group = QtWidgets.QComboBox()
         self.combobox_particle_group.addItems(['Leptons', 'Bosons', 'Baryons', 'Mesons'])
         self.combobox_particle_group.currentTextChanged.connect(self.onParticleGroupSelected)
+        self.combobox_particle_group.setFont(QtGui.QFont('Arial', 12))
 
         self.btn_add_initial = QtWidgets.QPushButton()
         self.btn_add_initial.setObjectName("btn_add_initial")
         self.btn_add_initial.clicked.connect(self.onAddInitialClicked)
+        self.btn_add_initial.setFont(QtGui.QFont('Arial', 12))
 
-        #self.btn_remove = QtWidgets.QPushButton()
-        #self.btn_remove.setObjectName("btn_remove")
 
         self.btn_add_final = QtWidgets.QPushButton()
         self.btn_add_final.setObjectName("btn_add_final")
         self.btn_add_final.clicked.connect(self.onAddFinalClicked)
+        self.btn_add_final.setFont(QtGui.QFont('Arial', 12))
 
 
         self.table_initial = QtWidgets.QTableView()
@@ -79,16 +80,14 @@ class Ui_MainWindow(object):
         self.selected_table = None
         self.table_final.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.table_final.customContextMenuRequested.connect(self.onRightClickMenu)
-
         
-
 
         self.table_sum = QtWidgets.QTableView()
         self.table_sum.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
         self.table_sum.setObjectName("table_sum")
-        self.table_sum.setMinimumWidth(700)
-        self.table_sum.setMaximumHeight(95)
-        self.table_sum.setMinimumHeight(95)
+        #self.table_sum.setMaximumWidth(700)
+        self.table_sum.setMaximumHeight(90)
+        self.table_sum.setMinimumHeight(90)
         self.table_sum.setModel(self.handler.getBothSums())
 
 
@@ -122,7 +121,9 @@ class Ui_MainWindow(object):
         #self.layout.addWidget(self.label_info, 1, 6)
 
         labelInitialName = QtWidgets.QLabel('Initial particles')
+        labelInitialName.setFont(QtGui.QFont('Arial', 16))
         labelFinalName = QtWidgets.QLabel('Final particles')
+        labelFinalName.setFont(QtGui.QFont('Arial', 16))
 
         self.layout.addWidget(self.table_sum, 1, 3, 1, 6)
         self.layout.addWidget(self.table_initial,3, 3, 1, 6, alignment=Qt.AlignmentFlag.AlignBottom)
@@ -133,9 +134,18 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(self.MainWindow)
         QtCore.QMetaObject.connectSlotsByName(self.MainWindow)
-        
+        self.updateForces()
+
         #resize tables
-        
+        for i in range(5):
+            self.table_selection.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)        
+        for i in range(19):
+            self.table_initial.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)        
+            self.table_final.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeMode.ResizeToContents) 
+        for i in range(17):
+            self.table_sum.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)        
+
+
 
 
 #######################################################

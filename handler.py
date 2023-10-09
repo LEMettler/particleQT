@@ -33,10 +33,10 @@ class Handler:
             return PandasModel(self.df_baryons[mask_columns])
         
     def getInitial(self):
-        return PandasModel(self.df_initial)
+        return PandasModel(self.df_initial.drop(columns=['idx']))
     
     def getFinal(self):
-        return PandasModel(self.df_final)        
+        return PandasModel(self.df_final.drop(columns=['idx']))        
     
     def getEquation(self):
         lhs = r' + '.join(self.df_initial.symbol.tolist())
