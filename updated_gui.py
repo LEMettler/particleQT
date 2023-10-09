@@ -38,6 +38,7 @@ class Ui_MainWindow(object):
         self.label_forces = QtWidgets.QLabel()
         self.label_forces.setMinimumSize(QtCore.QSize(200, 0))
         self.label_forces.setObjectName("label_forces")
+        self.updateForces()
 
         self.combobox_particle_group = QtWidgets.QComboBox()
         self.combobox_particle_group.addItems(['Leptons', 'Bosons', 'Baryons', 'Mesons'])
@@ -45,7 +46,7 @@ class Ui_MainWindow(object):
 
         self.btn_add_initial = QtWidgets.QPushButton()
         self.btn_add_initial.setObjectName("btn_add_initial")
-        self.btn_add_initial.clicked.connect(self.onAddFinalClicked)
+        self.btn_add_initial.clicked.connect(self.onAddInitialClicked)
 
         #self.btn_remove = QtWidgets.QPushButton()
         #self.btn_remove.setObjectName("btn_remove")
@@ -61,6 +62,8 @@ class Ui_MainWindow(object):
         self.table_initial.setMinimumWidth(700)
         self.table_initial.setMaximumHeight(125)
         self.table_initial.setMinimumHeight(125)
+        self.table_initial.setModel(self.handler.getInitial())
+        self.table_initial.clicked.connect(self.changeSelection)
 
         self.table_final = QtWidgets.QTableView()
         self.table_final.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
@@ -68,14 +71,20 @@ class Ui_MainWindow(object):
         self.table_final.setMinimumWidth(700)
         self.table_final.setMaximumHeight(125)
         self.table_final.setMinimumHeight(125)
+        self.table_final.setModel(self.handler.getFinal())
+        self.table_final.clicked.connect(self.changeSelection)
+        self.selected_table = None
+        
 
 
         self.table_sum = QtWidgets.QTableView()
         self.table_sum.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
         self.table_sum.setObjectName("table_sum")
         self.table_sum.setMinimumWidth(700)
-        self.table_sum.setMaximumHeight(125)
-        self.table_sum.setMinimumHeight(125)
+        self.table_sum.setMaximumHeight(95)
+        self.table_sum.setMinimumHeight(95)
+        self.table_sum.setModel(self.handler.getBothSums())
+
 
         self.table_selection = QtWidgets.QTableView()
         self.table_selection.setMinimumWidth(300)
@@ -83,6 +92,8 @@ class Ui_MainWindow(object):
         self.table_selection.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows) #++
         self.table_selection.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection) #++
         self.table_selection.setObjectName("table_selection")
+        self.table_selection.setModel(self.handler.getTable('leptons'))
+
 
         self.menubar = QtWidgets.QMenuBar()
         self.menubar.setGeometry(QtCore.QRect(0, 0, self.width, 20))
@@ -104,11 +115,22 @@ class Ui_MainWindow(object):
         self.layout.addWidget(self.label_forces, 0, 7, 1, 1)
         #self.layout.addWidget(self.label_info, 1, 6)
 
-        self.layout.addWidget(self.table_sum, 1, 3, 2, 6, alignment=Qt.AlignmentFlag.AlignBottom)
-        self.layout.addWidget(self.table_initial,3, 3, 2, 6)
-        self.layout.addWidget(self.table_final, 5, 3, 2, 6)
+        labelInitialName = QtWidgets.QLabel('Initial particles')
+        labelFinalName = QtWidgets.QLabel('Final particles')
+
+        self.layout.addWidget(self.table_sum, 1, 3, 1, 6)
+        self.layout.addWidget(self.table_initial,3, 3, 1, 6, alignment=Qt.AlignmentFlag.AlignBottom)
+        self.layout.addWidget(self.table_final, 5, 3, 1, 6, alignment=Qt.AlignmentFlag.AlignTop)
+        
+        self.layout.addWidget(labelInitialName, 2, 3, 1, 1, alignment=Qt.AlignmentFlag.AlignBottom)
+        self.layout.addWidget(labelFinalName, 4, 3, 1, 1, alignment=Qt.AlignmentFlag.AlignBottom)
+
         self.retranslateUi(self.MainWindow)
         QtCore.QMetaObject.connectSlotsByName(self.MainWindow)
+        
+        #resize tables
+        
+
 
 #######################################################
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -122,8 +144,9 @@ class Ui_MainWindow(object):
     
     def onAddInitialClicked(self):
         try:
+            selected_type = self.combobox_particle_group.currentText().lower()
             selected_index = self.table_selection.selectionModel().selectedRows()[0].row()
-            self.handler.addInitial(self.selected_type, selected_index)
+            self.handler.addInitial(selected_type, selected_index)
             self.updateInitialTable()
             self.updateSumTable()
             self.updateEquationCanvas()
@@ -133,8 +156,9 @@ class Ui_MainWindow(object):
 
     def onAddFinalClicked(self):
         try:
+            selected_type = self.combobox_particle_group.currentText().lower()
             selected_index = self.table_selection.selectionModel().selectedRows()[0].row()
-            self.handler.addFinal(self.selected_type, selected_index)
+            self.handler.addFinal(selected_type, selected_index)
             self.updateFinalTable()
             self.updateSumTable()
             self.updateEquationCanvas()
@@ -159,6 +183,46 @@ class Ui_MainWindow(object):
 
     def updateSumTable(self):
         self.table_sum.setModel(self.handler.getBothSums())
+
+    def updateForces(self):
+        bool_em, bool_strong, bool_weak = self.handler.checkForces()
+        line = f'EM: {bool_em}\nStrong: {bool_strong}\nWeak: {bool_weak}'
+        self.label_forces.setText(line)
+
+    def removeSelection(self):
+        try:
+            if self.selected_table == 'initial':
+                selected_index = self.table_initial.selectionModel().selectedRows()[0].row()
+                self.handler.removeInitial(selected_index)
+            else:
+                selected_index = self.table_final.selectionModel().selectedRows()[0].row()
+                self.handler.removeFinal(selected_index)
+        except:
+            print('error in removal')
+        #self.updateEquationCanvas()
+
+    
+    def updateEquationCanvas(self):
+        new_eq = self.handler.getEquation()
+        self.text_equation.set_text(new_eq)
+        self.text_equation.figure.canvas.draw()
+        self.label_info.setText(new_eq[1:-1])
+
+    def changeSelection(self):
+            try:
+                new_selection = self.MainWindow.sender()
+                if new_selection == self.table_initial:
+                    self.selected_table = 'initial'
+                    self.table_final.selectionModel().clearSelection()
+                else:
+                    self.selected_table = 'final'
+                    self.table_initial.selectionModel().clearSelection()
+            except:
+                print('error of changeSelection()')
+
+
+
+
 
 
 

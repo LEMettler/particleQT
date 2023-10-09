@@ -22,14 +22,15 @@ class Handler:
         
 
     def getTable(self, particle_type):
+        mask_columns = ['name', 'symbol', 'Q', 'J', 'quarks']
         if particle_type == 'leptons':
-            return PandasModel(self.df_leptons)
+            return PandasModel(self.df_leptons[mask_columns])
         elif particle_type == 'mesons':
-            return PandasModel(self.df_mesons)
+            return PandasModel(self.df_mesons[mask_columns])
         elif particle_type == 'bosons':
-            return PandasModel(self.df_bosons)
+            return PandasModel(self.df_bosons[mask_columns])
         else:
-            return PandasModel(self.df_baryons)
+            return PandasModel(self.df_baryons[mask_columns])
         
     def getInitial(self):
         return PandasModel(self.df_initial)
@@ -87,7 +88,8 @@ class Handler:
     
     def getBothSums(self):
         df = self.df_initial.copy()[self.sum_cols]
-        dict_initial = {'Q': [df.Q.sum()],
+        dict_initial = {' ': ['Initial'],
+                        'Q': [df.Q.sum()],
                    'J': [df.J.sum()],
                    'P': [df.P.product()],
                    'Baryon': [df.Baryon.sum()],
@@ -105,7 +107,8 @@ class Handler:
                    'L_tau': [df.L_tau.sum()]}
         
         df = self.df_final.copy()[self.sum_cols]
-        dict_final = {'Q': [df.Q.sum()],
+        dict_final = {' ': ['Final'],
+                    'Q': [df.Q.sum()],
                    'J': [df.J.sum()],
                    'P': [df.P.product()],
                    'Baryon': [df.Baryon.sum()],
@@ -125,7 +128,9 @@ class Handler:
         ret_df = pd.concat((pd.DataFrame().from_dict(dict_initial), pd.DataFrame().from_dict(dict_final)))
         list_conservation = []
         for i, key in enumerate(dict_initial.keys()):
-            if key == 'J':
+            if key == ' ':
+                pass
+            elif key == 'J':
                 #special case J: must both be .0 or .5
                 J_comp = (dict_initial['J'][0]%1.0 == 0.0) == (dict_final['J'][0]%1.0 == 0.0)
                 list_conservation.append(i)
