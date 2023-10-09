@@ -30,9 +30,6 @@ class Ui_MainWindow(object):
         self.text_equation = self.ax_equation.text(0.5, 0.5, r'$A + B \rightarrow X + Y$', fontsize=20, ha='center', va='center')
         #---------------
 
-        self.label_equation = QtWidgets.QLabel()
-        self.label_equation.setObjectName("label_equation")
-
         self.label_info = QtWidgets.QLabel()
         self.label_info.setMinimumSize(QtCore.QSize(200, 0))
         self.label_info.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -122,7 +119,6 @@ class Ui_MainWindow(object):
         self.layout = QtWidgets.QGridLayout()
         self.MainWindow.setLayout(self.layout)
 
-        #self.layout.addWidget(self.label_equation, 0, 4, 1, 4, alignment=Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.canvas_equation, 0, 4, 1, 4, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.layout.addWidget(self.label_forces, 2, 2, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
@@ -140,7 +136,6 @@ class Ui_MainWindow(object):
         self.layout.addWidget(self.table_final_sum, 9, 6, 1, 5, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.layout.addWidget(self.label_info, 10, 0, 1, 11, alignment=Qt.AlignmentFlag.AlignCenter)
-
 
         
     
@@ -170,8 +165,10 @@ class Ui_MainWindow(object):
 
         self.table_initial.setModel(self.handler.getInitial())
         self.table_final.setModel(self.handler.getFinal())
-        #self.table_initial_sum.setModel(self.handler.getInitialSum())
-        #self.table_final_sum.setModel(self.handler.getFinalSum())
+        
+        self.table_initial_sum.setModel(self.handler.getInitialSum())
+        self.table_final_sum.setModel(self.handler.getFinalSum())
+        self.updateForces()
 
         #resize tables
         for i in range(20):
@@ -274,9 +271,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label_equation.setText(_translate("MainWindow", "equation"))
-        self.label_info.setText(_translate("MainWindow", "equation"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "particleQT"))
+        self.label_info.setText(_translate("MainWindow", r"A + B \rightarrow X + Y"))
         self.label_forces.setText(_translate("MainWindow", "forces"))
         self.rbtn_leptons.setText(_translate("MainWindow", "Leptons"))
         self.rbtn_bosons.setText(_translate("MainWindow", "Bosons"))
