@@ -6,7 +6,6 @@ warnings.filterwarnings("ignore")
 from PyQt6.QtGui import QPalette, QColor, QBrush
 
 from matplotlib.backends.backend_qtagg import FigureCanvas
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.figure import Figure
 
