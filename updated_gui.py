@@ -56,6 +56,12 @@ class Ui_MainWindow(object):
         self.btn_add_final.clicked.connect(self.onAddFinalClicked)
         self.btn_add_final.setFont(QtGui.QFont('Arial', 12))
 
+        self.btn_complete = QtWidgets.QPushButton()
+        self.btn_complete.setObjectName("btn_add_final")
+        self.btn_complete.clicked.connect(self.onCompleteClicked)
+        self.btn_complete.setFont(QtGui.QFont('Arial', 12))
+
+
 
         self.table_initial = QtWidgets.QTableView()
         self.table_initial.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
@@ -116,9 +122,10 @@ class Ui_MainWindow(object):
         self.layout.addWidget(self.btn_add_final, 6, 1)
 
 
-        self.layout.addWidget(self.canvas_equation, 0, 3, 1, 3)
-        self.layout.addWidget(self.label_forces, 0, 7, 1, 1)
-        #self.layout.addWidget(self.label_info, 1, 6)
+        self.layout.addWidget(self.canvas_equation, 0, 3, 1, 2)
+        self.layout.addWidget(self.label_forces, 0, 6, 1, 1)
+        #self.layout.addWidget(self.label_info, 1, 7)
+        self.layout.addWidget(self.btn_complete, 0, 7)
 
         labelInitialName = QtWidgets.QLabel('Initial particles')
         labelInitialName.setFont(QtGui.QFont('Arial', 16))
@@ -151,6 +158,8 @@ class Ui_MainWindow(object):
 #######################################################
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #######################################################
+    def onCompleteClicked(self):
+        pass
 
     def onRightClickMenu(self, event):
         self.menu = QtWidgets.QMenu(self.MainWindow)
@@ -285,8 +294,9 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "particleQT"))
         self.label_info.setText(_translate("MainWindow", r"A + B \rightarrow X + Y"))
         self.label_forces.setText(_translate("MainWindow", "forces"))
-        self.btn_add_initial.setText(_translate("MainWindow", "add initial"))
-        self.btn_add_final.setText(_translate("MainWindow", "add final"))
+        self.btn_add_initial.setText(_translate("MainWindow", "Add initial"))
+        self.btn_add_final.setText(_translate("MainWindow", "Add final"))
+        self.btn_complete.setText(_translate("MainWindow", "Complete"))
 
 
 ########################################################################
