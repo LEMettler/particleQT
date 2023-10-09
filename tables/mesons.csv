@@ -3,8 +3,8 @@ idx,name,symbol,quarks,Q,J,P,baryonnumber,leptonnumber,T,T_3,I,I_3,S,C,B,T.1,L_e
 13,Positive rho,\rho^+,u\overline{d},1,1,-1,0,0,1,1,1,1,0,0,0,0,0,0,0
 14,Negative pion,\pi^-,\overline{u}d,-1,0,-1,0,0,1,-1,1,1,0,0,0,0,0,0,0
 15,Negative rho,\rho^-,\overline{u}d,-1,1,-1,0,0,1,0,1,0,0,0,0,0,0,0,0
-16,Neutral Pion,\pi^0,\overline{u}u\) or \(\overline{d}d,0,0,-1,0,0,1,0,1,0,0,0,0,0,0,0,0
-17,Neutral eta,\eta^0,"\overline{u}u, \, \overline{d}d\) or \(\overline{s}s",0,0,-1,0,0,1,1,1,0.5,0,0,0,0,0,0,0
+16,Neutral Pion,\pi^0,\frac{\overline{u}u\) - \(\overline{d}d}{\sqrt{2}},0,0,-1,0,0,1,0,1,0,0,0,0,0,0,0,0
+17,Neutral eta,\eta^0,\frac{\overline{u}u + \overline{d}d – 2\overline{s}s}{\sqrt{6}},0,0,-1,0,0,1,1,1,0.5,0,0,0,0,0,0,0
 18,Positive kaon,K^+,u\overline{s},1,0,-1,0,0,1,1,0.5,0.5,-1,0,0,0,0,0,0
 19,Neutral kaon,K^0,d\overline{s},0,0,-1,0,0,1,0,0.5,-0.5,-1,0,0,0,0,0,0
 20,Negative kaon,K^-,\overline{u}s,-1,0,-1,0,0,1,0,0.5,0.5,1,0,0,0,0,0,0
