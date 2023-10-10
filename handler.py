@@ -199,19 +199,31 @@ class InteractionBuilder:
         if 'strong' in self.list_forces:
             conservation_lists.append(strong_conservation_list)
 
-        self.buildInteractionFromQn(conservation_lists)
 
-    def buildInteractionFromQn(self, conservation_lists):
         viable_idx_sets = []
+        
+        for conservation in self.list_forces:
+            df_particles = self.input_handler.df_all_particles
+            
+            conservation_list = []
+            if 'weak' == conservation:
+                conservation_list = weak_conservation_list
 
-        #combinations
-        df_particles = self.input_handler.df_all_particles
-        list_particles_idx = self.input_handler.df_all_particles.idx.to_list()
-        list_combinations = itertools.product(list_particles_idx, repeat=self.n_particles) #list of sets of n particle_idx
+            elif 'em' == conservation:
+                conservation_lists = em_conservation_list
+                df_particles = df_particles.query('Q != 0')
+            else: #strong
+                conservation_lists = strong_conservation_list
+                df_particles.query('baryonnumber != 0 or J == 0 or J == 1') # strong force does not interact with leptons
 
-        for conservation_list in conservation_lists:
-                    #calc: differences in quantum number initial-final (list/dict)
-            df_sums = self.input_handler.getBothSumsDataFrame()[conservation_list]
+            list_particles_idx = df_particles.idx.to_list()
+            list_combinations = itertools.product(list_particles_idx, repeat=self.n_particles) #list of sets of n particle_idx
+
+
+            df_sums = self.input_handler.getBothSumsDataFrame()
+            df_sums = df_sums[conservation_list]
+
+            #calc: differences in quantum number initial-final (list/dict)
             dict_diff = (df_sums.iloc[0] - df_sums.iloc[1]).to_dict()
             if 'P' in conservation_list:
                 dict_diff['P'] = df_sums.P.iloc[0] * df_sums.P.iloc[1] #special case parity    
@@ -238,15 +250,17 @@ class InteractionBuilder:
                 #        break
 
                 #build an interaction in this configuration and append to viable solutions if not already by another proccess
-                if satisifies_conservation and (set_idx not in viable_idx_sets):
-                    print(set_idx)
+                if satisifies_conservation:
                     viable_idx_sets.append(set_idx)
-                    list_idx_final = list(set_idx) + self.input_handler.df_final.idx.to_list()
-                    temp_handler = Handler()
-                    temp_handler.df_initial = self.input_handler.df_initial
-                    temp_handler.df_final = df_particles.query('idx in @list_idx_final')
-                    
-                    self.viable_interactions.append(temp_handler)
+        
+        reduced_idx_tuples = {tuple([i for i in np.sort(j)]) for j in viable_idx_sets}
+        for red_set in reduced_idx_tuples:                     
+            list_idx_final = list(red_set) + self.input_handler.df_final.idx.to_list()
+            temp_handler = Handler()
+            temp_handler.df_initial = self.input_handler.df_initial
+            temp_handler.df_final = df_particles.query('idx in @list_idx_final')
+            print(temp_handler.df_final.name.tolist())
+            self.viable_interactions.append(temp_handler)
 
 
         
