@@ -1,9 +1,10 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QStyledItemDelegate
 from handler import *
+from complete_popup_gui import *
+
 import warnings
 warnings.filterwarnings("ignore")
-from PyQt6.QtGui import QPalette, QColor, QBrush
 
 from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.backends.qt_compat import QtWidgets
@@ -161,7 +162,8 @@ class Ui_MainWindow(object):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #######################################################
     def onCompleteClicked(self):
-        pass
+        dlg = CompleteDialog(self.handler)
+        dlg.exec()
 
     def onRightClickAddMenu(self, event):
         self.menu = QtWidgets.QMenu(self.MainWindow)

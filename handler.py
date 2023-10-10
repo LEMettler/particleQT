@@ -248,6 +248,34 @@ class Handler:
 
     
 
+##################################################
+class InteractionBuilder:
+    def __init__(self, input_interaction, list_forces, n_particles):
+        self.input_handler = input_interaction
+        self.list_forces = list_forces
+        self.n_particles = n_particles
+
+        self.viable_interactions = []
+
+    def buildInteraction(self, conservation_list):
+
+        #calc: differences in quantum number initial-final (list/dict)
+        #get a *complete* list of particles
+        #bc we have quite a few numbers to be conserved: instead
+        #calculate all the combinations of n with itertools
+
+        # iter through combinations_ 
+            # iter trough quantum numbers to be conserved and check that == difference
+                #if not -> break
+            # ifall qn match -> generate interaction and add to viable_interactions
+ 
+        pass
+
+
+    
+
+
+###################################################
 
 #source: https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/
 class PandasModel(QtCore.QAbstractTableModel):
@@ -274,6 +302,8 @@ class PandasModel(QtCore.QAbstractTableModel):
 
             if orientation == Qt.Orientation.Vertical:
                 return str(self._data.index[section])
+        
+
             
 
 ###################################################
