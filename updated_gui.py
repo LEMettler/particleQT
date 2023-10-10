@@ -90,7 +90,7 @@ class Ui_MainWindow(object):
         
 
         self.table_sum = QtWidgets.QTableView()
-        self.table_sum.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
+        self.table_sum.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         self.table_sum.setObjectName("table_sum")
         #self.table_sum.setMaximumWidth(700)
         self.table_sum.setMaximumHeight(90)

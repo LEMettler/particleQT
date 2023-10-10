@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from itertools import combinations
 from PyQt6.QtCore import Qt
 from PyQt6 import QtCore, QtGui
 import warnings
@@ -16,6 +17,7 @@ class Handler:
                           'mesons': self.df_mesons,
                           'baryons': self.df_baryons,
                           'bosons': self.df_bosons}
+        self.df_all_particles = pd.concat((self.df_leptons, self.df_bosons, self.df_baryons, self.df_mesons)).reset_index().sort_values('idx')
 
         self.df_initial = pd.DataFrame(columns=self.df_baryons.columns)
         self.df_final = pd.DataFrame(columns=self.df_baryons.columns)        
@@ -44,99 +46,28 @@ class Handler:
         rhs = r' + '.join(self.df_final.symbol.tolist())
 
         return r'$ ' + lhs + r' \rightarrow ' + rhs + r' $'
-        
-    def getInitialSum(self):
-        df = self.df_initial.copy()[self.sum_cols]
-
-        df_vals = {'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        return PandasModelColorSelection(pd.DataFrame().from_dict(df_vals), self.getConservations()[0])
-        
-    
-    def getFinalSum(self):
-        df = self.df_final.copy()[self.sum_cols]
-        df_vals = {'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        return PandasModelColorSelection(pd.DataFrame().from_dict(df_vals), self.getConservations()[0])
-    
+     
     def getBothSums(self):
         df = self.df_initial.copy()[self.sum_cols]
-        dict_initial = {' ': ['Initial'],
-                        'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        
+        dict_initial = df.sum().to_dict()
+        dict_initial['J'] = df.P.product()
+
         df = self.df_final.copy()[self.sum_cols]
-        dict_final = {' ': ['Final'],
-                    'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
+        dict_final = df.sum().to_dict()
+        dict_final['J'] = df.P.product()
+
         
-        ret_df = pd.concat((pd.DataFrame().from_dict(dict_initial), pd.DataFrame().from_dict(dict_final)))
+        ret_df = pd.concat((pd.DataFrame(dict_initial, index=[0]), pd.DataFrame(dict_final, index=[0])))
         list_conservation = []
         for i, key in enumerate(dict_initial.keys()):
             if key == ' ':
                 pass
             elif key == 'J':
                 #special case J: must both be .0 or .5
-                J_comp = (dict_initial['J'][0]%1.0 == 0.0) == (dict_final['J'][0]%1.0 == 0.0)
+                J_comp = (dict_initial['J']%1.0 == 0.0) == (dict_final['J']%1.0 == 0.0)
                 list_conservation.append(i)
             elif key == 'T':
-                T_comp = (dict_initial['T'][0]%1.0 == 0.0) == (dict_final['T'][0]%1.0 == 0.0)
+                T_comp = (dict_initial['T']%1.0 == 0.0) == (dict_final['T']%1.0 == 0.0)
                 list_conservation.append(i)
             else:
                 if dict_initial[key] == dict_final[key]:
@@ -147,54 +78,24 @@ class Handler:
 
     def getBothSumsDataFrame(self):
         df = self.df_initial.copy()[self.sum_cols]
-        dict_initial = {' ': ['Initial'],
-                        'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        
+        dict_initial = df.sum().to_dict()
+        dict_initial['J'] = df.P.product()
+
         df = self.df_final.copy()[self.sum_cols]
-        dict_final = {' ': ['Final'],
-                    'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
+        dict_final = df.sum().to_dict()
+        dict_final['J'] = df.P.product()
         
-        ret_df = pd.concat((pd.DataFrame().from_dict(dict_initial), pd.DataFrame().from_dict(dict_final)))
+        ret_df = pd.concat((pd.DataFrame(dict_initial, index=[0]), pd.DataFrame(dict_final, index=[0])))
         list_conservation = []
         for i, key in enumerate(dict_initial.keys()):
             if key == ' ':
                 pass
             elif key == 'J':
                 #special case J: must both be .0 or .5
-                J_comp = (dict_initial['J'][0]%1.0 == 0.0) == (dict_final['J'][0]%1.0 == 0.0)
+                J_comp = (dict_initial['J']%1.0 == 0.0) == (dict_final['J']%1.0 == 0.0)
                 list_conservation.append(i)
             elif key == 'T':
-                T_comp = (dict_initial['T'][0]%1.0 == 0.0) == (dict_final['T'][0]%1.0 == 0.0)
+                T_comp = (dict_initial['T']%1.0 == 0.0) == (dict_final['T']%1.0 == 0.0)
                 list_conservation.append(i)
             else:
                 if dict_initial[key] == dict_final[key]:
@@ -203,55 +104,25 @@ class Handler:
         return ret_df
         
 
-
     def getConservations(self):
         df = self.df_initial.copy()[self.sum_cols]
+        dict_initial = df.sum().to_dict()
+        dict_initial['J'] = df.P.product()
 
-        dict_initial = {'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        
         df = self.df_final.copy()[self.sum_cols]
-        dict_final = {'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
+        dict_final = df.sum().to_dict()
+        dict_final['J'] = df.P.product()
         
         dict_conservation = {}
         list_conservation = []
         for i, key in enumerate(dict_initial.keys()):
             if key == 'J':
                 #special case J: must both be .0 or .5
-                J_comp = (dict_initial['J'][0]%1.0 == 0.0) == (dict_final['J'][0]%1.0 == 0.0)
+                J_comp = (dict_initial['J']%1.0 == 0.0) == (dict_final['J']%1.0 == 0.0)
                 dict_conservation['J'] = J_comp
                 list_conservation.append(i)
             elif key == 'T':
-                T_comp = (dict_initial['T'][0]%1.0 == 0.0) == (dict_final['T'][0]%1.0 == 0.0)
+                T_comp = (dict_initial['T']%1.0 == 0.0) == (dict_final['T']%1.0 == 0.0)
                 dict_conservation['T'] = T_comp
                 list_conservation.append(i)
             else:
@@ -315,27 +186,62 @@ class InteractionBuilder:
 
         self.viable_interactions = []
 
-    def buildInteraction(self, conservation_list):
+    def buildInteraction(self):
+        em_conservation_list = ['Q', 'J', 'P', 'Baryon', 'Lepton', 'I_3', 'S', 'C', 'B', 'T.1', 'L_e', 'L_mu', 'L_tau']
+        strong_conservation_list = ['Q', 'J', 'P', 'Baryon', 'Lepton', 'I', 'I_3', 'S', 'C', 'B', 'T.1', 'L_e', 'L_mu', 'L_tau']
+        weak_conservation_list = ['Q', 'J', 'Baryon', 'Lepton', 'T_3', 'L_e', 'L_mu', 'L_tau']
 
-        df_sums = self.input_handler.getBothSumsDataFrame()
-        #pay attention to parity
-        #sum_delta = (df_sums.iloc[0] - df_sums.iloc[1]).tolist()
-    
+        conservation_lists = []
+        if 'weak' in self.list_forces:
+            conservation_lists.append(weak_conservation_list)
+        if 'em' in self.list_forces:
+            conservation_lists.append(em_conservation_list)
+        if 'strong' in self.list_forces:
+            conservation_lists.append(strong_conservation_list)
 
-        #calc: differences in quantum number initial-final (list/dict)
-        #get a *complete* list of particles
-        #bc we have quite a few numbers to be conserved: instead
-        #calculate all the combinations of n with itertools
+        self.buildInteractionFromQn(conservation_lists)
 
-        # iter through combinations_ 
-            # iter trough quantum numbers to be conserved and check that == difference
-                #if not -> break
-            # ifall qn match -> generate interaction and add to viable_interactions
- 
-        pass
+    def buildInteractionFromQn(self, conservation_lists):
+        for conservation_list in conservation_lists:
+
+            viable_idx_sets = []
+
+            #calc: differences in quantum number initial-final (list/dict)
+            df_sums = self.input_handler.getBothSumsDataFrame()
+            dict_diff = (df_sums.iloc[0] - df_sums.iloc[1]).to_dict()
+            dict_diff['P'] = df_sums.P.iloc[0] * df_sums.P.iloc[1] #special case parity    
+
+            #combinations
+            df_particles = self.input_handler.df_all_particles
+            list_particles_idx = self.input_handler.df_all_particles.idx.to_list()
+            list_combinations = combinations(list_particles_idx, self.n_particles) #list of sets of n particle_idx
+
+            for set_idx in list_combinations:
+                #temporary interaction
+                df_temp = df_particles.query('idx in @set_idx')[conservation_list]
+                dict_temp = df_temp.sum().to_dict()
+                if 'P' in conservation_list:
+                    dict_temp['P'] = df_temp['P'].product()
+            
+                satisifies_conservation = True
+                for qn in conservation_list:
+                    if dict_temp[qn] != dict_diff[qn]:
+                        satisifies_conservation = False
+                        break
+
+                #build an interaction in this configuration and append to viable solutions if not already by another proccess
+                if satisifies_conservation and (set_idx not in viable_idx_sets):
+                    print(set_idx)
+                    viable_idx_sets.append(set_idx)
+                    list_idx_final = list(set_idx) + self.input_handler.df_final.idx.to_list()
+                    temp_handler = Handler()
+                    temp_handler.df_initial = self.input_handler.df_initial
+                    temp_handler.df_final = df_particles.query('idx in qlist_idx_final')
+                    
+                    self.viable_interactions.append(temp_handler.copy())
 
 
-    
+        
 
 
 ###################################################
