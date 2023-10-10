@@ -211,7 +211,7 @@ class Ui_MainWindow(object):
         self.menu.addAction(delete_action)
         self.menu.popup(QtGui.QCursor.pos())
 
-    def deleteRowInitial(self, event):        
+    def deleteRowInitial(self, event):       
         clicked_index = self.table_initial.rowAt(event.y())
         self.handler.removeInitial(clicked_index)
         self.updateInitialTable()

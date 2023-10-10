@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from itertools import combinations
+import itertools
 from PyQt6.QtCore import Qt
 from PyQt6 import QtCore, QtGui
 import warnings
@@ -202,19 +202,19 @@ class InteractionBuilder:
         self.buildInteractionFromQn(conservation_lists)
 
     def buildInteractionFromQn(self, conservation_lists):
+        viable_idx_sets = []
+
+        #combinations
+        df_particles = self.input_handler.df_all_particles
+        list_particles_idx = self.input_handler.df_all_particles.idx.to_list()
+        list_combinations = itertools.product(list_particles_idx, repeat=self.n_particles) #list of sets of n particle_idx
+
         for conservation_list in conservation_lists:
-
-            viable_idx_sets = []
-
-            #calc: differences in quantum number initial-final (list/dict)
-            df_sums = self.input_handler.getBothSumsDataFrame()
+                    #calc: differences in quantum number initial-final (list/dict)
+            df_sums = self.input_handler.getBothSumsDataFrame()[conservation_list]
             dict_diff = (df_sums.iloc[0] - df_sums.iloc[1]).to_dict()
-            dict_diff['P'] = df_sums.P.iloc[0] * df_sums.P.iloc[1] #special case parity    
-
-            #combinations
-            df_particles = self.input_handler.df_all_particles
-            list_particles_idx = self.input_handler.df_all_particles.idx.to_list()
-            list_combinations = combinations(list_particles_idx, self.n_particles) #list of sets of n particle_idx
+            if 'P' in conservation_list:
+                dict_diff['P'] = df_sums.P.iloc[0] * df_sums.P.iloc[1] #special case parity    
 
             for set_idx in list_combinations:
                 #temporary interaction
@@ -224,10 +224,18 @@ class InteractionBuilder:
                     dict_temp['P'] = df_temp['P'].product()
             
                 satisifies_conservation = True
-                for qn in conservation_list:
-                    if dict_temp[qn] != dict_diff[qn]:
-                        satisifies_conservation = False
-                        break
+
+                arr_diff = np.array(list(dict_diff.values()))
+                arr_temp = np.array(list(dict_temp.values()))
+                satisifies_conservation = all((arr_diff - arr_temp) == 0)
+
+                
+                #for qn in conservation_list:
+                #    if dict_temp[qn] - dict_diff[qn] != 0:
+                #        if (set_idx == (0,7)):
+                #            print(qn)
+                #        satisifies_conservation = False
+                #        break
 
                 #build an interaction in this configuration and append to viable solutions if not already by another proccess
                 if satisifies_conservation and (set_idx not in viable_idx_sets):
@@ -236,9 +244,9 @@ class InteractionBuilder:
                     list_idx_final = list(set_idx) + self.input_handler.df_final.idx.to_list()
                     temp_handler = Handler()
                     temp_handler.df_initial = self.input_handler.df_initial
-                    temp_handler.df_final = df_particles.query('idx in qlist_idx_final')
+                    temp_handler.df_final = df_particles.query('idx in @list_idx_final')
                     
-                    self.viable_interactions.append(temp_handler.copy())
+                    self.viable_interactions.append(temp_handler)
 
 
         
