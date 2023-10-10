@@ -26,7 +26,7 @@ class Ui_MainWindow(object):
         self.ax_equation.set_xlim(0,1)
         self.ax_equation.set_ylim(0,1)
         self.ax_equation.axis('off')
-        self.text_equation = self.ax_equation.text(0.5, 0.5, r'$A + B \rightarrow X + Y$', fontsize=20, ha='center', va='center')
+        self.text_equation = self.ax_equation.text(0.5, 0.5, r'$\mathrm{Initial} \rightarrow \mathrm{Final}$', fontsize=20, ha='center', va='center')
         #---------------
 
         self.label_info = QtWidgets.QLabel()
@@ -72,7 +72,7 @@ class Ui_MainWindow(object):
         self.table_initial.setModel(self.handler.getInitial())
         self.table_initial.clicked.connect(self.changeSelection)
         self.table_initial.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.table_initial.customContextMenuRequested.connect(self.onRightClickMenu)
+        self.table_initial.customContextMenuRequested.connect(self.onRightClickDeleteMenu)
 
 
         self.table_final = QtWidgets.QTableView()
@@ -85,7 +85,7 @@ class Ui_MainWindow(object):
         self.table_final.clicked.connect(self.changeSelection)
         self.selected_table = None
         self.table_final.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.table_final.customContextMenuRequested.connect(self.onRightClickMenu)
+        self.table_final.customContextMenuRequested.connect(self.onRightClickDeleteMenu)
         
 
         self.table_sum = QtWidgets.QTableView()
@@ -104,7 +104,9 @@ class Ui_MainWindow(object):
         self.table_selection.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection) #++
         self.table_selection.setObjectName("table_selection")
         self.table_selection.setModel(self.handler.getTable('leptons'))
-
+        self.table_selection.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table_selection.customContextMenuRequested.connect(self.onRightClickAddMenu)
+        
 
         self.menubar = QtWidgets.QMenuBar()
         self.menubar.setGeometry(QtCore.QRect(0, 0, self.width, 20))
@@ -161,17 +163,50 @@ class Ui_MainWindow(object):
     def onCompleteClicked(self):
         pass
 
-    def onRightClickMenu(self, event):
+    def onRightClickAddMenu(self, event):
         self.menu = QtWidgets.QMenu(self.MainWindow)
-        deleteAction = QtGui.QAction('Delete', self.MainWindow)
+
+        add_initial_action = QtGui.QAction('Add initial', self.MainWindow)
+        add_initial_action.triggered.connect(lambda: self.addInitialPerMenu(event))
+        add_final_action = QtGui.QAction('Add final', self.MainWindow)
+        add_final_action.triggered.connect(lambda: self.addFinalPerMenu(event))
+        
+        self.menu.addAction(add_initial_action)
+        self.menu.addAction(add_final_action)
+        self.menu.popup(QtGui.QCursor.pos())
+
+    def addInitialPerMenu(self, event):
+        clicked_index = self.table_selection.rowAt(event.y())
+        selected_type = self.combobox_particle_group.currentText().lower()
+
+        self.handler.addInitial(selected_type, clicked_index)
+        self.updateInitialTable()
+        self.updateSumTable()
+        self.updateEquationCanvas()
+        self.updateForces()
+
+    def addFinalPerMenu(self, event):
+        clicked_index = self.table_selection.rowAt(event.y())
+        selected_type = self.combobox_particle_group.currentText().lower()
+        
+        self.handler.addFinal(selected_type, clicked_index)
+        self.updateFinalTable()
+        self.updateSumTable()
+        self.updateEquationCanvas()
+        self.updateForces()
+
+
+    def onRightClickDeleteMenu(self, event):
+        self.menu = QtWidgets.QMenu(self.MainWindow)
+        delete_action = QtGui.QAction('Delete', self.MainWindow)
 
         sender_table = self.MainWindow.sender()
         if sender_table == self.table_initial:
-            deleteAction.triggered.connect(lambda: self.deleteRowInitial(event))
+            delete_action.triggered.connect(lambda: self.deleteRowInitial(event))
         else:
-            deleteAction.triggered.connect(lambda: self.deleteRowFinal(event))
+            delete_action.triggered.connect(lambda: self.deleteRowFinal(event))
 
-        self.menu.addAction(deleteAction)
+        self.menu.addAction(delete_action)
         self.menu.popup(QtGui.QCursor.pos())
 
     def deleteRowInitial(self, event):        
@@ -292,7 +327,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "particleQT"))
-        self.label_info.setText(_translate("MainWindow", r"A + B \rightarrow X + Y"))
+        self.label_info.setText(_translate("MainWindow", r"\mathrm{Initial} \rightarrow \mathrm{Final}"))
         self.label_forces.setText(_translate("MainWindow", "forces"))
         self.btn_add_initial.setText(_translate("MainWindow", "Add initial"))
         self.btn_add_final.setText(_translate("MainWindow", "Add final"))
