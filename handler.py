@@ -22,20 +22,21 @@ class Handler:
         
 
     def getTable(self, particle_type):
+        mask_columns = ['name', 'symbol', 'Q', 'J', 'quarks']
         if particle_type == 'leptons':
-            return PandasModel(self.df_leptons)
+            return PandasModel(self.df_leptons[mask_columns])
         elif particle_type == 'mesons':
-            return PandasModel(self.df_mesons)
+            return PandasModel(self.df_mesons[mask_columns])
         elif particle_type == 'bosons':
-            return PandasModel(self.df_bosons)
+            return PandasModel(self.df_bosons[mask_columns])
         else:
-            return PandasModel(self.df_baryons)
+            return PandasModel(self.df_baryons[mask_columns])
         
     def getInitial(self):
-        return PandasModel(self.df_initial)
+        return PandasModel(self.df_initial.drop(columns=['idx']))
     
     def getFinal(self):
-        return PandasModel(self.df_final)        
+        return PandasModel(self.df_final.drop(columns=['idx']))        
     
     def getEquation(self):
         lhs = r' + '.join(self.df_initial.symbol.tolist())
@@ -85,6 +86,66 @@ class Handler:
                    'L_tau': [df.L_tau.sum()]}
         return PandasModelColorSelection(pd.DataFrame().from_dict(df_vals), self.getConservations()[0])
     
+    def getBothSums(self):
+        df = self.df_initial.copy()[self.sum_cols]
+        dict_initial = {' ': ['Initial'],
+                        'Q': [df.Q.sum()],
+                   'J': [df.J.sum()],
+                   'P': [df.P.product()],
+                   'Baryon': [df.Baryon.sum()],
+                   'Lepton': [df.Lepton.sum()],
+                   'T': [df['T'].sum()],
+                   'T_3': [df.T_3.sum()],
+                   'I': [df.I.sum()],
+                   'I_3': [df.I_3.sum()],
+                   'S': [df.S.sum()],
+                   'C': [df.C.sum()],
+                   'B': [df.B.sum()],
+                   'T.1': [df['T.1'].sum()],
+                   'L_e': [df.L_e.sum()],
+                   'L_mu': [df.L_mu.sum()],
+                   'L_tau': [df.L_tau.sum()]}
+        
+        df = self.df_final.copy()[self.sum_cols]
+        dict_final = {' ': ['Final'],
+                    'Q': [df.Q.sum()],
+                   'J': [df.J.sum()],
+                   'P': [df.P.product()],
+                   'Baryon': [df.Baryon.sum()],
+                   'Lepton': [df.Lepton.sum()],
+                   'T': [df['T'].sum()],
+                   'T_3': [df.T_3.sum()],
+                   'I': [df.I.sum()],
+                   'I_3': [df.I_3.sum()],
+                   'S': [df.S.sum()],
+                   'C': [df.C.sum()],
+                   'B': [df.B.sum()],
+                   'T.1': [df['T.1'].sum()],
+                   'L_e': [df.L_e.sum()],
+                   'L_mu': [df.L_mu.sum()],
+                   'L_tau': [df.L_tau.sum()]}
+        
+        ret_df = pd.concat((pd.DataFrame().from_dict(dict_initial), pd.DataFrame().from_dict(dict_final)))
+        list_conservation = []
+        for i, key in enumerate(dict_initial.keys()):
+            if key == ' ':
+                pass
+            elif key == 'J':
+                #special case J: must both be .0 or .5
+                J_comp = (dict_initial['J'][0]%1.0 == 0.0) == (dict_final['J'][0]%1.0 == 0.0)
+                list_conservation.append(i)
+            elif key == 'T':
+                T_comp = (dict_initial['T'][0]%1.0 == 0.0) == (dict_final['T'][0]%1.0 == 0.0)
+                list_conservation.append(i)
+            else:
+                if dict_initial[key] == dict_final[key]:
+                    list_conservation.append(i)
+
+        return PandasModelColorSelection(ret_df, list_conservation)
+
+        
+
+
     def getConservations(self):
         df = self.df_initial.copy()[self.sum_cols]
 
