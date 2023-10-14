@@ -159,6 +159,11 @@ class Handler:
 
         return em_conservation, strong_conservation, weak_conservation
 
+    def setInitialFromIdx(self, idx_list):
+        self.df_initial = self.df_all_particles.query('idx in @idx_list')
+
+    def setFinalFromIdx(self, idx_list):
+        self.df_final = self.df_all_particles.query('idx in @idx_list')
 
     def addInitial(self, particle_type, index):
         row = self.type_dict[particle_type].query('index == @index')
@@ -184,87 +189,52 @@ class InteractionBuilder:
         self.list_forces = list_forces
         self.n_particles = n_particles
 
-        self.viable_interactions = []
+        self.viable_em = []
+        self.viable_strong = []
+        self.viable_weak = []
 
     def buildInteraction(self):
-        em_conservation_list = ['Q', 'J', 'P', 'Baryon', 'Lepton', 'I_3', 'S', 'C', 'B', 'T.1', 'L_e', 'L_mu', 'L_tau']
-        strong_conservation_list = ['Q', 'J', 'P', 'Baryon', 'Lepton', 'I', 'I_3', 'S', 'C', 'B', 'T.1', 'L_e', 'L_mu', 'L_tau']
-        weak_conservation_list = ['Q', 'J', 'Baryon', 'Lepton', 'T_3', 'L_e', 'L_mu', 'L_tau']
-
-        conservation_lists = []
-        if 'weak' in self.list_forces:
-            conservation_lists.append(weak_conservation_list)
-        if 'em' in self.list_forces:
-            conservation_lists.append(em_conservation_list)
-        if 'strong' in self.list_forces:
-            conservation_lists.append(strong_conservation_list)
-
-
-        viable_idx_sets = []
+        self.viable_em.clear()
+        self.viable_strong.clear()
+        self.viable_weak.clear()
         
-        for conservation in self.list_forces:
-            df_particles = self.input_handler.df_all_particles
-            
-            conservation_list = []
-            if 'weak' == conservation:
-                conservation_list = weak_conservation_list
+        #new handler to check interactions
+        temp_handler = Handler()
+        temp_handler.df_initial = self.input_handler.df_initial
 
-            elif 'em' == conservation:
-                conservation_lists = em_conservation_list
-                df_particles = df_particles.query('Q != 0')
-            else: #strong
-                conservation_lists = strong_conservation_list
-                df_particles.query('baryonnumber != 0 or J == 0 or J == 1') # strong force does not interact with leptons
+        #list of acceptable interactions:
+        conserved_em_idx_sets = []
+        conserved_weak_idx_sets = []
+        conserved_strong_idx_sets = []
 
-            list_particles_idx = df_particles.idx.to_list()
-            list_combinations = itertools.product(list_particles_idx, repeat=self.n_particles) #list of sets of n particle_idx
+        #get list of final combinations
+        df_particles = self.input_handler.df_all_particles
+        list_particles_idx = df_particles.idx.to_list()
+        list_combinations = itertools.product(list_particles_idx, repeat=self.n_particles) #list of sets of n particle_idx
+        
+        #get the idx of the predefined particles and add them to list_combinations
+        predefined_particles = self.input_handler.df_final.idx.to_list()
+        #remove dublicates and add the predefined particles
+        list_combinations = [tuple(predefined_particles + [i for i in np.sort(j)]) for j in list_combinations]
+        
+        for set_idx in list_combinations:
+            #set the final particles of temp_handler to to particle combination in the list
+            #temp_final_particles = df_particles.query('idx in @set_idx').copy()
+            #temp_handler.df_final = temp_final_particles
+            temp_handler.setFinalFromIdx(set_idx)
 
+            #check  what is conserved
+            con_em, con_strong, con_weak = temp_handler.checkForces()
 
-            df_sums = self.input_handler.getBothSumsDataFrame()
-            df_sums = df_sums[conservation_list]
-
-            #calc: differences in quantum number initial-final (list/dict)
-            dict_diff = (df_sums.iloc[0] - df_sums.iloc[1]).to_dict()
-            if 'P' in conservation_list:
-                dict_diff['P'] = df_sums.P.iloc[0] * df_sums.P.iloc[1] #special case parity    
-
-            for set_idx in list_combinations:
-                #temporary interaction
-                df_temp = df_particles.query('idx in @set_idx')[conservation_list]
-                dict_temp = df_temp.sum().to_dict()
-                if 'P' in conservation_list:
-                    dict_temp['P'] = df_temp['P'].product()
-            
-                satisifies_conservation = True
-
-                arr_diff = np.array(list(dict_diff.values()))
-                arr_temp = np.array(list(dict_temp.values()))
-                satisifies_conservation = all((arr_diff - arr_temp) == 0)
-
+            if con_em:
+                self.viable_em.append(set_idx)
+            if con_weak:
+                self.viable_weak.append(set_idx)
+            if con_strong:
+                self.viable_strong.append(set_idx)
                 
-                #for qn in conservation_list:
-                #    if dict_temp[qn] - dict_diff[qn] != 0:
-                #        if (set_idx == (0,7)):
-                #            print(qn)
-                #        satisifies_conservation = False
-                #        break
-
-                #build an interaction in this configuration and append to viable solutions if not already by another proccess
-                if satisifies_conservation:
-                    viable_idx_sets.append(set_idx)
-        
-        reduced_idx_tuples = {tuple([i for i in np.sort(j)]) for j in viable_idx_sets}
-        for red_set in reduced_idx_tuples:                     
-            list_idx_final = list(red_set) + self.input_handler.df_final.idx.to_list()
-            temp_handler = Handler()
-            temp_handler.df_initial = self.input_handler.df_initial
-            temp_handler.df_final = df_particles.query('idx in @list_idx_final')
-            print(temp_handler.df_final.name.tolist())
-            self.viable_interactions.append(temp_handler)
-
-
-        
-
+            if any(temp_handler.checkForces()):
+                print(temp_handler.df_final.name.to_list())
 
 ###################################################
 

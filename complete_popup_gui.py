@@ -26,7 +26,7 @@ class CompleteDialog(QDialog):
         self.checkbox_strong.setCheckState(Qt.CheckState.Checked)
         self.checkbox_weak.setCheckState(Qt.CheckState.Checked)
 
-        label_title_n_particles = QtWidgets.QLabel('Number of final particles')
+        label_title_n_particles = QtWidgets.QLabel('Final particles to add')
         label_title_n_particles.setFont(QtGui.QFont('Arial', 12))
 
         self.combobox_n_particles = QtWidgets.QComboBox()
@@ -97,6 +97,11 @@ class CompleteDialog(QDialog):
 
             self.updateDisplay()
 
+
+#TODO: change checkboxes to a selection above the canvas
+#
+#show equations on display
+#
 
     def updateEquationCanvas(self, text):
         self.text_equation.set_text(text)
