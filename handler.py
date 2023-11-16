@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+import itertools
 from PyQt6.QtCore import Qt
 from PyQt6 import QtCore, QtGui
 import warnings
@@ -15,6 +17,7 @@ class Handler:
                           'mesons': self.df_mesons,
                           'baryons': self.df_baryons,
                           'bosons': self.df_bosons}
+        self.df_all_particles = pd.concat((self.df_leptons, self.df_bosons, self.df_baryons, self.df_mesons)).reset_index().sort_values('idx')
 
         self.df_initial = pd.DataFrame(columns=self.df_baryons.columns)
         self.df_final = pd.DataFrame(columns=self.df_baryons.columns)        
@@ -43,99 +46,28 @@ class Handler:
         rhs = r' + '.join(self.df_final.symbol.tolist())
 
         return r'$ ' + lhs + r' \rightarrow ' + rhs + r' $'
-        
-    def getInitialSum(self):
-        df = self.df_initial.copy()[self.sum_cols]
-
-        df_vals = {'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        return PandasModelColorSelection(pd.DataFrame().from_dict(df_vals), self.getConservations()[0])
-        
-    
-    def getFinalSum(self):
-        df = self.df_final.copy()[self.sum_cols]
-        df_vals = {'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        return PandasModelColorSelection(pd.DataFrame().from_dict(df_vals), self.getConservations()[0])
-    
+     
     def getBothSums(self):
         df = self.df_initial.copy()[self.sum_cols]
-        dict_initial = {' ': ['Initial'],
-                        'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        
+        dict_initial = df.sum().to_dict()
+        dict_initial['J'] = df.P.product()
+
         df = self.df_final.copy()[self.sum_cols]
-        dict_final = {' ': ['Final'],
-                    'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
+        dict_final = df.sum().to_dict()
+        dict_final['J'] = df.P.product()
+
         
-        ret_df = pd.concat((pd.DataFrame().from_dict(dict_initial), pd.DataFrame().from_dict(dict_final)))
+        ret_df = pd.concat((pd.DataFrame(dict_initial, index=[0]), pd.DataFrame(dict_final, index=[0])))
         list_conservation = []
         for i, key in enumerate(dict_initial.keys()):
             if key == ' ':
                 pass
             elif key == 'J':
                 #special case J: must both be .0 or .5
-                J_comp = (dict_initial['J'][0]%1.0 == 0.0) == (dict_final['J'][0]%1.0 == 0.0)
+                J_comp = (dict_initial['J']%1.0 == 0.0) == (dict_final['J']%1.0 == 0.0)
                 list_conservation.append(i)
             elif key == 'T':
-                T_comp = (dict_initial['T'][0]%1.0 == 0.0) == (dict_final['T'][0]%1.0 == 0.0)
+                T_comp = (dict_initial['T']%1.0 == 0.0) == (dict_final['T']%1.0 == 0.0)
                 list_conservation.append(i)
             else:
                 if dict_initial[key] == dict_final[key]:
@@ -143,57 +75,54 @@ class Handler:
 
         return PandasModelColorSelection(ret_df, list_conservation)
 
-        
 
+    def getBothSumsDataFrame(self):
+        df = self.df_initial.copy()[self.sum_cols]
+        dict_initial = df.sum().to_dict()
+        dict_initial['J'] = df.P.product()
+
+        df = self.df_final.copy()[self.sum_cols]
+        dict_final = df.sum().to_dict()
+        dict_final['J'] = df.P.product()
+        
+        ret_df = pd.concat((pd.DataFrame(dict_initial, index=[0]), pd.DataFrame(dict_final, index=[0])))
+        list_conservation = []
+        for i, key in enumerate(dict_initial.keys()):
+            if key == ' ':
+                pass
+            elif key == 'J':
+                #special case J: must both be .0 or .5
+                J_comp = (dict_initial['J']%1.0 == 0.0) == (dict_final['J']%1.0 == 0.0)
+                list_conservation.append(i)
+            elif key == 'T':
+                T_comp = (dict_initial['T']%1.0 == 0.0) == (dict_final['T']%1.0 == 0.0)
+                list_conservation.append(i)
+            else:
+                if dict_initial[key] == dict_final[key]:
+                    list_conservation.append(i)
+
+        return ret_df
+        
 
     def getConservations(self):
         df = self.df_initial.copy()[self.sum_cols]
+        dict_initial = df.sum().to_dict()
+        dict_initial['J'] = df.P.product()
 
-        dict_initial = {'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
-        
         df = self.df_final.copy()[self.sum_cols]
-        dict_final = {'Q': [df.Q.sum()],
-                   'J': [df.J.sum()],
-                   'P': [df.P.product()],
-                   'Baryon': [df.Baryon.sum()],
-                   'Lepton': [df.Lepton.sum()],
-                   'T': [df['T'].sum()],
-                   'T_3': [df.T_3.sum()],
-                   'I': [df.I.sum()],
-                   'I_3': [df.I_3.sum()],
-                   'S': [df.S.sum()],
-                   'C': [df.C.sum()],
-                   'B': [df.B.sum()],
-                   'T.1': [df['T.1'].sum()],
-                   'L_e': [df.L_e.sum()],
-                   'L_mu': [df.L_mu.sum()],
-                   'L_tau': [df.L_tau.sum()]}
+        dict_final = df.sum().to_dict()
+        dict_final['J'] = df.P.product()
         
         dict_conservation = {}
         list_conservation = []
         for i, key in enumerate(dict_initial.keys()):
             if key == 'J':
                 #special case J: must both be .0 or .5
-                J_comp = (dict_initial['J'][0]%1.0 == 0.0) == (dict_final['J'][0]%1.0 == 0.0)
+                J_comp = (dict_initial['J']%1.0 == 0.0) == (dict_final['J']%1.0 == 0.0)
                 dict_conservation['J'] = J_comp
                 list_conservation.append(i)
             elif key == 'T':
-                T_comp = (dict_initial['T'][0]%1.0 == 0.0) == (dict_final['T'][0]%1.0 == 0.0)
+                T_comp = (dict_initial['T']%1.0 == 0.0) == (dict_final['T']%1.0 == 0.0)
                 dict_conservation['T'] = T_comp
                 list_conservation.append(i)
             else:
@@ -230,6 +159,11 @@ class Handler:
 
         return em_conservation, strong_conservation, weak_conservation
 
+    def setInitialFromIdx(self, idx_list):
+        self.df_initial = self.df_all_particles.query('idx in @idx_list')
+
+    def setFinalFromIdx(self, idx_list):
+        self.df_final = self.df_all_particles.query('idx in @idx_list')
 
     def addInitial(self, particle_type, index):
         row = self.type_dict[particle_type].query('index == @index')
@@ -248,6 +182,61 @@ class Handler:
 
     
 
+##################################################
+class InteractionBuilder:
+    def __init__(self, input_interaction, list_forces, n_particles):
+        self.input_handler = input_interaction
+        self.list_forces = list_forces
+        self.n_particles = n_particles
+
+        self.viable_em = []
+        self.viable_strong = []
+        self.viable_weak = []
+
+    def buildInteraction(self):
+        self.viable_em.clear()
+        self.viable_strong.clear()
+        self.viable_weak.clear()
+        
+        #new handler to check interactions
+        temp_handler = Handler()
+        temp_handler.df_initial = self.input_handler.df_initial
+
+        #list of acceptable interactions:
+        conserved_em_idx_sets = []
+        conserved_weak_idx_sets = []
+        conserved_strong_idx_sets = []
+
+        #get list of final combinations
+        df_particles = self.input_handler.df_all_particles
+        list_particles_idx = df_particles.idx.to_list()
+        list_combinations = itertools.product(list_particles_idx, repeat=self.n_particles) #list of sets of n particle_idx
+        
+        #get the idx of the predefined particles and add them to list_combinations
+        predefined_particles = self.input_handler.df_final.idx.to_list()
+        #remove dublicates and add the predefined particles
+        list_combinations = [tuple(predefined_particles + [i for i in np.sort(j)]) for j in list_combinations]
+        
+        for set_idx in list_combinations:
+            #set the final particles of temp_handler to to particle combination in the list
+            #temp_final_particles = df_particles.query('idx in @set_idx').copy()
+            #temp_handler.df_final = temp_final_particles
+            temp_handler.setFinalFromIdx(set_idx)
+
+            #check  what is conserved
+            con_em, con_strong, con_weak = temp_handler.checkForces()
+
+            if con_em:
+                self.viable_em.append(set_idx)
+            if con_weak:
+                self.viable_weak.append(set_idx)
+            if con_strong:
+                self.viable_strong.append(set_idx)
+                
+            if any(temp_handler.checkForces()):
+                print(temp_handler.df_final.name.to_list())
+
+###################################################
 
 #source: https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/
 class PandasModel(QtCore.QAbstractTableModel):
@@ -274,6 +263,8 @@ class PandasModel(QtCore.QAbstractTableModel):
 
             if orientation == Qt.Orientation.Vertical:
                 return str(self._data.index[section])
+        
+
             
 
 ###################################################

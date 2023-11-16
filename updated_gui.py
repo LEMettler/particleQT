@@ -1,9 +1,10 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QStyledItemDelegate
 from handler import *
+from complete_popup_gui import *
+
 import warnings
 warnings.filterwarnings("ignore")
-from PyQt6.QtGui import QPalette, QColor, QBrush
 
 from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.backends.qt_compat import QtWidgets
@@ -89,7 +90,7 @@ class Ui_MainWindow(object):
         
 
         self.table_sum = QtWidgets.QTableView()
-        self.table_sum.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
+        self.table_sum.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         self.table_sum.setObjectName("table_sum")
         #self.table_sum.setMaximumWidth(700)
         self.table_sum.setMaximumHeight(90)
@@ -161,7 +162,8 @@ class Ui_MainWindow(object):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #######################################################
     def onCompleteClicked(self):
-        pass
+        dlg = CompleteDialog(self.handler)
+        dlg.exec()
 
     def onRightClickAddMenu(self, event):
         self.menu = QtWidgets.QMenu(self.MainWindow)
@@ -209,7 +211,7 @@ class Ui_MainWindow(object):
         self.menu.addAction(delete_action)
         self.menu.popup(QtGui.QCursor.pos())
 
-    def deleteRowInitial(self, event):        
+    def deleteRowInitial(self, event):       
         clicked_index = self.table_initial.rowAt(event.y())
         self.handler.removeInitial(clicked_index)
         self.updateInitialTable()
